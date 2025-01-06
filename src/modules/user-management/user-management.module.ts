@@ -9,6 +9,7 @@ import { UserSchemaDomainMapper } from './infrastructure/mappers/user-schema-dom
 import { TypeORMUserRepository } from './infrastructure/repositories/user/type-orm-user.repository';
 import { UuidNewUserFactory } from './infrastructure/factories/new-user/uuid-new-user.factory';
 import { BCryptPasswordHasher } from './infrastructure/hasher/password-hasher/bcrypt-password.hasher';
+import { LoginService } from './application/login/login.service';
 
 @Module({
   imports: [
@@ -26,6 +27,17 @@ import { BCryptPasswordHasher } from './infrastructure/hasher/password-hasher/bc
       const passwordHasher = new BCryptPasswordHasher();
 
       return new RegisterUserService(userRepository, newUserFactory, passwordHasher);
+    },
+    inject: [EntityManager],
+  }, {
+    provide: LoginService,
+    useFactory: (entityManager: EntityManager) => {
+      const domainSchemaMapper = new UserDomainSchemaMapper();
+      const schemaDomainMapper = new UserSchemaDomainMapper();
+
+      const userRepository = new TypeORMUserRepository(entityManager, domainSchemaMapper, schemaDomainMapper);
+
+      return new LoginService();
     },
     inject: [EntityManager],
   }],
