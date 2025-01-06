@@ -1,13 +1,17 @@
-import { PasswordComparer } from "@user-management/domain/ports/password.comparer";
-import { TokenDTO, TokenGenerator } from "@user-management/domain/ports/token.generator";
+import {
+  PasswordComparer
+} from "@user-management/domain/ports/password.comparer";
+import {
+  TokenDTO, TokenGenerator
+} from "@user-management/domain/ports/token.generator";
 import { UserRepository } from "@user-management/domain/ports/user.repository";
 
-interface LoginInput {
+export interface LoginInput {
   email: string;
   password: string;
 }
 
-interface LoginOutput {
+export interface LoginOutput {
   accessToken: TokenDTO;
   refreshToken: TokenDTO;
   user: {
