@@ -64,8 +64,8 @@ describe('LoginService', () => {
 
       const loginOutput = await loginService.execute(loginInput);
 
-      expect(loginOutput.accessToken).toBeDefined();
-      expect(loginOutput.refreshToken).toBeDefined();
+      expect(loginOutput.access).toBeDefined();
+      expect(loginOutput.refresh).toBeDefined();
       expect(loginOutput.user).toEqual({
         id: user.id,
         name: user.name,

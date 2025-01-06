@@ -13,8 +13,8 @@ export interface LoginInput {
 }
 
 export interface LoginOutput {
-  accessToken: TokenDTO;
-  refreshToken: TokenDTO;
+  access: TokenDTO;
+  refresh: TokenDTO;
   user: {
     id: string;
     name: string;
@@ -46,12 +46,12 @@ export class LoginService {
       throw new InvalidCredentialsError();
     }
 
-    const accessToken = this.accessTokenGenerator.generate(user.id);
-    const refreshToken = this.refreshTokenGenerator.generate(user.id);
+    const access = this.accessTokenGenerator.generate(user.id);
+    const refresh = this.refreshTokenGenerator.generate(user.id);
 
     return {
-      accessToken,
-      refreshToken,
+      access,
+      refresh,
       user: {
         id: user.id,
         name: user.name,
