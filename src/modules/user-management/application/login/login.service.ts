@@ -1,3 +1,4 @@
+import { InvalidCredentialsError } from "@user-management/domain/errors/invalid-credentials.error";
 import {
   PasswordComparer
 } from "@user-management/domain/ports/password.comparer";
@@ -33,7 +34,7 @@ export class LoginService {
     const user = await this.userRepository.findByEmail(input.email);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new InvalidCredentialsError();
     }
 
     const isPasswordCorrect = await this.passwordComparer.compare({
@@ -42,7 +43,7 @@ export class LoginService {
     });
 
     if (!isPasswordCorrect) {
-      throw new Error("Invalid password");
+      throw new InvalidCredentialsError();
     }
 
     const accessToken = this.accessTokenGenerator.generate(user.id);

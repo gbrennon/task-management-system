@@ -4,6 +4,7 @@ import { PasswordComparer } from "@user-management/domain/ports/password.compare
 import { TokenGenerator } from "@user-management/domain/ports/token.generator";
 import { instance, mock, when, deepEqual } from "ts-mockito";
 import { User } from "@user-management/domain/entities/user";
+import { InvalidCredentialsError } from "@user-management/domain/errors/invalid-credentials.error";
 
 describe('LoginService', () => {
   let loginService: LoginService;
@@ -81,7 +82,7 @@ describe('LoginService', () => {
 
       await expect(
         loginService.execute(input)
-      ).rejects.toThrow('User not found');
+      ).rejects.toThrow(new InvalidCredentialsError());
     });
 
     it('should throw an error when password is incorrect', async () => {
@@ -97,7 +98,7 @@ describe('LoginService', () => {
 
       await expect(
         loginService.execute(input)
-      ).rejects.toThrow('Invalid password');
+      ).rejects.toThrow(new InvalidCredentialsError());
     });
   });
 });
