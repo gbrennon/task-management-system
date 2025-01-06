@@ -5,12 +5,12 @@ import { TokenGenerator } from "@user-management/domain/ports/token.generator";
 import { instance, mock, when, deepEqual } from "ts-mockito";
 import { User } from "@user-management/domain/entities/user";
 
-
 describe('LoginService', () => {
   let loginService: LoginService;
   let userRepository: UserRepository;
   let passwordComparer: PasswordComparer;
-  let tokenGenerator: TokenGenerator;
+  let accessTokenGenerator: TokenGenerator;
+  let refreshTokenGenerator: TokenGenerator;
   const user = new User(
     '1',
     'John Doe',
@@ -22,11 +22,14 @@ describe('LoginService', () => {
   beforeEach(() => {
     userRepository = mock<UserRepository>();
     passwordComparer = mock<PasswordComparer>();
-    tokenGenerator = mock<TokenGenerator>();
+    accessTokenGenerator = mock<TokenGenerator>();
+    refreshTokenGenerator = mock<TokenGenerator>();
+
     loginService = new LoginService(
       instance(userRepository),
       instance(passwordComparer),
-      instance(tokenGenerator)
+      instance(accessTokenGenerator),
+      instance(refreshTokenGenerator)
     );
   });
 
@@ -39,7 +42,7 @@ describe('LoginService', () => {
   });
 
   describe('execute', () => {
-    it('should return token and user when login is successful', async () => {
+    it('when i successfull should return LoginOutput', async () => {
       const loginInput = {
         email: user.email,
         password: 'password'
@@ -49,11 +52,19 @@ describe('LoginService', () => {
         plainTextPassword: loginInput.password,
         encryptedPassword: user.password
       }))).thenResolve(true);
-      when(tokenGenerator.generate(user.id)).thenReturn('token');
+      when(accessTokenGenerator.generate(user.id)).thenReturn({
+        token: 'access-token',
+        expiresIn: 600
+      });
+      when(refreshTokenGenerator.generate(user.id)).thenReturn({
+        token: 'refresh-token',
+        expiresIn: 3600
+      });
 
       const loginOutput = await loginService.execute(loginInput);
 
-      expect(loginOutput.token).toBeDefined();
+      expect(loginOutput.accessToken).toBeDefined();
+      expect(loginOutput.refreshToken).toBeDefined();
       expect(loginOutput.user).toEqual({
         id: user.id,
         name: user.name,
@@ -83,6 +94,10 @@ describe('LoginService', () => {
         plainTextPassword: input.password,
         encryptedPassword: user.password
       }))).thenResolve(false);
+
+      await expect(
+        loginService.execute(input)
+      ).rejects.toThrow('Invalid password');
     });
   });
 });

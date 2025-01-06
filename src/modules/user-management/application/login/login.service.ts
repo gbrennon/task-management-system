@@ -1,5 +1,5 @@
 import { PasswordComparer } from "@user-management/domain/ports/password.comparer";
-import { TokenGenerator } from "@user-management/domain/ports/token.generator";
+import { TokenDTO, TokenGenerator } from "@user-management/domain/ports/token.generator";
 import { UserRepository } from "@user-management/domain/ports/user.repository";
 
 interface LoginInput {
@@ -8,20 +8,21 @@ interface LoginInput {
 }
 
 interface LoginOutput {
-  token: string;
+  accessToken: TokenDTO;
+  refreshToken: TokenDTO;
   user: {
     id: string;
     name: string;
     email: string;
-  }
+  };
 }
-
 
 export class LoginService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordComparer: PasswordComparer,
-    private readonly tokenGenerator: TokenGenerator
+    private readonly accessTokenGenerator: TokenGenerator,
+    private readonly refreshTokenGenerator: TokenGenerator,
   ) {}
 
   async execute(input: LoginInput): Promise<LoginOutput> {
@@ -40,8 +41,17 @@ export class LoginService {
       throw new Error("Invalid password");
     }
 
-    const token = this.tokenGenerator.generate(user.id);
+    const accessToken = this.accessTokenGenerator.generate(user.id);
+    const refreshToken = this.refreshTokenGenerator.generate(user.id);
 
-    return { token, user: { id: user.id, name: user.name, email: user.email } };
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    };
   }
 }
