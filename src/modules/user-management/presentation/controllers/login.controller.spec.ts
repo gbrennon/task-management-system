@@ -1,6 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ValidationPipe, BadRequestException, Paramtype, ArgumentMetadata } from '@nestjs/common';
-
+import {
+  ValidationPipe,
+  BadRequestException,
+  ArgumentMetadata,
+  HttpStatus,
+  HttpException
+} from '@nestjs/common';
 import { LoginController } from './login.controller';
 import { LoginService } from '../../application/login/login.service';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error';
@@ -72,7 +77,7 @@ describe('LoginController', () => {
       loginService.execute.mockRejectedValue(new InvalidCredentialsError());
 
       await expect(controller.handle(invalidDto)).rejects.toThrow(
-        InvalidCredentialsError,
+        new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED),
       );
     });
 
