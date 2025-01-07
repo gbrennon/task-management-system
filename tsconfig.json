@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "baseUrl": "src/",
+    "allowJs": true,
     "paths": {
       "@shared/*": ["shared/*"],
       "@user-management/*": ["modules/user-management/*"]
