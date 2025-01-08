@@ -1,3 +1,4 @@
+import { TaskStatusAlreadySetError } from "../errors/task-status-already-set.error";
 import { TaskStatus } from "../value-objects/task-status";
 import { Task } from "./task";
 
@@ -26,7 +27,9 @@ describe('Task', () => {
       const changeStatus = () => task.changeStatus(newStatus);
 
       // Assert
-      expect(changeStatus).toThrowError('Task status is already ' + newStatus.value);
+      expect(changeStatus).toThrow(
+        new TaskStatusAlreadySetError(newStatus.value)
+      );
     });
   });
 });

@@ -1,3 +1,4 @@
+import { TaskStatusAlreadySetError } from "../errors/task-status-already-set.error";
 import { TaskStatus } from "../value-objects/task-status";
 
 export class Task {
@@ -11,7 +12,7 @@ export class Task {
 
   public changeStatus(newStatus: TaskStatus): Task {
     if (this.status === newStatus) {
-      throw new Error('Task status is already ' + newStatus.value);
+      throw new TaskStatusAlreadySetError(newStatus.value);
     }
 
     return new Task(
