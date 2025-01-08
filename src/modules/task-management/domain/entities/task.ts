@@ -1,4 +1,6 @@
-import { TaskStatusAlreadySetError } from "../errors/task-status-already-set.error";
+import {
+  TaskStatusAlreadySetError
+} from "../errors/task-status-already-set.error";
 import { TaskStatus } from "../value-objects/task-status";
 
 export class Task {
