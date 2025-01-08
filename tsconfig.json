@@ -22,7 +22,8 @@
     "allowJs": true,
     "paths": {
       "@shared/*": ["shared/*"],
-      "@user-management/*": ["modules/user-management/*"]
+      "@user-management/*": ["modules/user-management/*"],
+      "@task-management/*": ["modules/task-management/*"]
     }
   }
 }
