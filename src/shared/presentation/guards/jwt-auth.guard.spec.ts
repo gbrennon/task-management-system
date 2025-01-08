@@ -37,7 +37,9 @@ describe('JwtAuthGuard', () => {
 
     const mockExecutionContext = {
       switchToHttp: jest.fn().mockReturnValue({
-        getRequest: jest.fn().mockReturnValue({ headers: { authorization: 'Bearer token' } }),
+        getRequest: jest.fn().mockReturnValue({
+          headers: { authorization: 'Bearer token' }
+        }),
       }),
     } as unknown as ExecutionContext;
 
@@ -62,4 +64,3 @@ describe('JwtAuthGuard', () => {
     );
   });
 });
-
