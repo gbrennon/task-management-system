@@ -1,8 +1,5 @@
 import { Task } from "@task-management/domain/entities/task";
-import { TaskStatus } from "@task-management/domain/value-objects/task-status";
-import {
-  TaskEntity
-} from "@task-management/infrastructure/entities/task.entity";
+import TaskEntity from "@task-management/infrastructure/entities/task.entity";
 
 
 export class TaskDomainSchemaMapper {

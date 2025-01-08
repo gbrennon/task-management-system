@@ -1,7 +1,5 @@
 import { TaskSchemaDomainMapper } from "./task-schema-domain.mapper";
-import {
-  TaskEntity
-} from "@task-management/infrastructure/entities/task.entity";
+import TaskEntity from "@task-management/infrastructure/entities/task.entity";
 import { Task } from "@task-management/domain/entities/task";
 
 describe("TaskSchemaDomainMapper", () => {

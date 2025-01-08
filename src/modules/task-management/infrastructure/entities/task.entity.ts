@@ -3,7 +3,7 @@ import { TaskStatus } from '../../domain/value-objects/task-status';
 import { BaseEntity } from '@shared/infrastructure/entities/BaseEntity';
 
 @Entity('tasks')
-export class TaskEntity extends BaseEntity {
+export default class TaskEntity extends BaseEntity {
   @PrimaryColumn('uuid')
   public id!: string;
 
