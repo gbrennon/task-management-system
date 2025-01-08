@@ -20,7 +20,7 @@ describe("TaskSchemaDomainMapper", () => {
       expect(taskEntity.id).toBe(task.id);
       expect(taskEntity.title).toBe(task.title);
       expect(taskEntity.description).toBe(task.description);
-      expect(taskEntity.status).toBe(task.status);
+      expect(taskEntity.status).toBe(task.status.value);
       expect(taskEntity.ownerId).toBe(task.ownerId);
     });
   });

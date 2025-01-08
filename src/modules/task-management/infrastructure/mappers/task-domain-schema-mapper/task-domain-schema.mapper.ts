@@ -10,7 +10,7 @@ export class TaskDomainSchemaMapper {
     entity.id = task.id;
     entity.title = task.title;
     entity.description = task.description;
-    entity.status = task.status;
+    entity.status = task.status.value;
     entity.ownerId = task.ownerId;
 
     return entity;

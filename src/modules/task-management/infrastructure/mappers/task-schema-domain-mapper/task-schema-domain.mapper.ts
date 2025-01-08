@@ -7,7 +7,7 @@ export class TaskSchemaDomainMapper {
   constructor() {}
 
   map(taskSchema: TaskEntity): Task {
-    const status = new TaskStatus(taskSchema.status.value);
+    const status = new TaskStatus(taskSchema.status);
 
     return new Task(
       taskSchema.id,
