@@ -1,5 +1,5 @@
 export class TaskStatus {
-  private constructor(
+  public constructor(
     public readonly value: string
   ) {}
 
