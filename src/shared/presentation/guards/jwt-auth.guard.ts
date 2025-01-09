@@ -1,45 +1,42 @@
-import {
+import { 
   Injectable,
+  CanActivate,
   ExecutionContext,
-  UnauthorizedException,
-  CanActivate
+  UnauthorizedException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import {
-  MissingAuthorizationHeaderException
-} from '../exceptions/missing-authorization-header.exception';
-import {
-  InvalidOrExpiredTokenException
-} from '../exceptions/invalid-or-expired-token.exception';
+import { Reflector } from '@nestjs/core';
+import { authConfig } from '../../config/auth.config';
+import { InvalidOrExpiredTokenException } from '../exceptions/invalid-or-expired-token.exception';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly reflector: Reflector
+  ) {}
 
-  // Implement the canActivate method manually
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
-    if (!authHeader) {
-      throw new UnauthorizedException('Authorization header is missing');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // throw new UnauthorizedException('Token is missing or invalid');
+      throw new InvalidOrExpiredTokenException();
     }
 
-    const token = authHeader.split(' ')[1]; // Extract token from "Bearer token"
-
-    if (!token) {
-      throw new MissingAuthorizationHeaderException();
-    }
+    const token = authHeader.split(' ')[1];
 
     try {
-      // Decode and verify the JWT token
-      const user = await this.jwtService.verifyAsync(token);
+      const decodedToken = this.jwtService.verify(token, {
+        secret: authConfig.accessToken.secret, // Use access token secret
+      });
 
-      // Attach the user to the request
-      request.user = { userId: user?.sub }; // Assuming 'sub' contains the user ID
-
-      return true; // Authorization successful
-    } catch (err) {
+      // Attach decoded token to the request for use in controllers
+      request.user = decodedToken;
+      return true;
+    } catch (error) {
+      // throw new UnauthorizedException('Token is invalid or expired');
       throw new InvalidOrExpiredTokenException();
     }
   }
