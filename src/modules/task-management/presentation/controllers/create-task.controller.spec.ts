@@ -40,7 +40,7 @@ describe('CreateTaskController', () => {
             throw new InvalidOrExpiredTokenException();
           }
 
-          request.user = { userId: '123' };
+          request.user = { id: '123' };
           return true;
         }),
       })
@@ -59,12 +59,13 @@ describe('CreateTaskController', () => {
     await app.init();
     taskService = module.get<CreateTaskService>(CreateTaskService);
   });
+
   it('should create a task successfully when authorized', async () => {
     const createTaskDto = { title: 'Test Task', description: 'Test description' };
     const createdTask = { id: '1' };
 
     // Mock the service's execute method
-    jest.spyOn(taskService, 'execute').mockResolvedValue(createdTask);
+    const executeSpy = jest.spyOn(taskService, 'execute').mockResolvedValue(createdTask);
 
     const response = await request(app.getHttpServer())
       .post('/tasks')
@@ -73,10 +74,12 @@ describe('CreateTaskController', () => {
       .expect(201);
 
     expect(response.body).toEqual({ id: '1' });
-    expect(taskService.execute).toHaveBeenCalledWith({
+
+    // Verify the service is called with the correct input, including the user ID
+    expect(executeSpy).toHaveBeenCalledWith({
       title: 'Test Task',
       description: 'Test description',
-      ownerId: '123',
+      ownerId: '123', // This must match the mocked userId
     });
   });
 

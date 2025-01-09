@@ -18,7 +18,7 @@ export class CreateTaskController {
     @Req() request: any,
     @Body() dto: CreateTaskRequestDto
   ): Promise<CreateTaskResponseDto> {
-    const userId = request.user.userId;
+    const userId = request.user.id;
     const input = {
       ...dto,
       ownerId: userId

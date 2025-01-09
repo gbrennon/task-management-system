@@ -8,10 +8,12 @@ import { NewTaskFactory } from './infrastructure/factories/new-task/uuid-new-tas
 import { TypeORMTaskRepository } from './infrastructure/repositories/task/type-orm-task.repository';
 import { TaskDomainSchemaMapper } from './infrastructure/mappers/task-domain-schema-mapper/task-domain-schema.mapper';
 import { TaskSchemaDomainMapper } from './infrastructure/mappers/task-schema-domain-mapper/task-schema-domain.mapper';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TaskEntity])
+    TypeOrmModule.forFeature([TaskEntity]),
+    JwtModule
   ],
   controllers: [CreateTaskController],
   providers: [{
