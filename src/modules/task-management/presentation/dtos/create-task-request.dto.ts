@@ -1,16 +1,11 @@
-import { IsString, IsNotEmpty, IsUUID, Length } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateTaskRequestDto {
-  @IsString()
-  @IsNotEmpty()
-  @Length(3, 255)
+  @IsNotEmpty({ message: 'title is required' })
+  @IsString({ message: 'title must be a string' })
   title: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Length(3, 500)
+  @IsNotEmpty({ message: 'description is required' })
+  @IsString({ message: 'description must be a string' })
   description: string;
-
-  @IsUUID() // Validates that the value is a valid UUID
-  ownerId: string;
 }

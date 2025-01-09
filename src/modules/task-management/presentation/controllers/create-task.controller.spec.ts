@@ -1,78 +1,139 @@
-import * as request from 'supertest';
-import { CreateTaskService } from '@task-management/application/create-task/create-task.service';
-import { CreateTaskController } from './create-task.controller';
-import { CreateTaskRequestDto } from '../dtos/create-task-request.dto';
-import { CreateTaskResponseDto } from '../dtos/create-task-response.dto';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as request from 'supertest';
+import { CreateTaskController } from './create-task.controller';
+import { JwtAuthGuard } from '@shared/presentation/guards/jwt-auth.guard';
+import { CreateTaskService } from '../../application/create-task/create-task.service';
+import { INestApplication } from '@nestjs/common';
+import { InvalidOrExpiredTokenException } from '@shared/presentation/exceptions/invalid-or-expired-token.exception';
+import { TokenNotProvidedException } from '@shared/presentation/exceptions/token-not-provided.exception';
+import { ValidationPipe } from '@nestjs/common';
 
 describe('CreateTaskController', () => {
-  let service: CreateTaskService;
   let app: INestApplication;
+  let taskService: CreateTaskService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CreateTaskController],
-      providers: [CreateTaskService],
-    }).compile();
+      providers: [
+        {
+          provide: CreateTaskService,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+      ],
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({
+        canActivate: jest.fn((context) => {
+          const request = context.switchToHttp().getRequest();
+          const authHeader = request.headers.authorization;
+
+          if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            throw new TokenNotProvidedException();
+          }
+
+          const token = authHeader.split(' ')[1];
+
+          if (token !== 'valid_token') {
+            throw new InvalidOrExpiredTokenException();
+          }
+
+          request.user = { userId: '123' };
+          return true;
+        }),
+      })
+      .compile();
 
     app = module.createNestApplication();
+
+    // Add the validation pipe here
     app.useGlobalPipes(
       new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      })
+        whitelist: true, // Remove extra fields automatically
+        forbidNonWhitelisted: true, // Reject extra fields
+      }),
     );
+
     await app.init();
+    taskService = module.get<CreateTaskService>(CreateTaskService);
+  });
+  it('should create a task successfully when authorized', async () => {
+    const createTaskDto = { title: 'Test Task', description: 'Test description' };
+    const createdTask = { id: '1' };
 
-    service = module.get<CreateTaskService>(CreateTaskService);
+    // Mock the service's execute method
+    jest.spyOn(taskService, 'execute').mockResolvedValue(createdTask);
+
+    const response = await request(app.getHttpServer())
+      .post('/tasks')
+      .set('Authorization', 'Bearer valid_token') // Provide a valid token
+      .send(createTaskDto)
+      .expect(201);
+
+    expect(response.body).toEqual({ id: '1' });
+    expect(taskService.execute).toHaveBeenCalledWith({
+      title: 'Test Task',
+      description: 'Test description',
+      ownerId: '123',
+    });
   });
 
-  afterEach(async () => {
-    await app.close();
+  it('should reject requests without an authorization token', async () => {
+    const createTaskDto = { title: 'Test Task', description: 'Test description' };
+
+    await request(app.getHttpServer())
+      .post('/tasks') // No Authorization header
+      .send(createTaskDto)
+      .expect(401) // Unauthorized status code
+      .then((response) => {
+        // Optionally, verify the structure if your exception format is consistent
+        expect(response.body).toHaveProperty('statusCode', 401);
+        expect(response.body).toHaveProperty('error', 'Unauthorized');
+      });
   });
 
-  describe('handle', () => {
-    it('should return CreateTaskResponseDto on success', async () => {
-      const validDto: CreateTaskRequestDto = {
-        title: 'Task 1',
-        description: 'Description 1',
-        ownerId: 'f2fff90c-33ef-45d2-bfde-871d662a355c', // valid UUID
-      };
-      const mockResponse: CreateTaskResponseDto = { id: '123' };
+  it('should reject requests with an invalid authorization token', async () => {
+    const createTaskDto = { title: 'Test Task', description: 'Test description' };
 
-      // Spy on the execute method and mock the response
-      jest.spyOn(service, 'execute').mockResolvedValue(mockResponse);
+    await request(app.getHttpServer())
+      .post('/tasks')
+      .set('Authorization', 'Bearer invalid_token') // Provide an invalid token
+      .send(createTaskDto)
+      .expect(401) // Unauthorized status code
+      .then((response) => {
+        expect(response.body).toHaveProperty('statusCode', 401);
+        expect(response.body).toHaveProperty('error', 'Unauthorized');
+      });
+  });
 
-      // Send request using supertest
-      const response = await request(app.getHttpServer())
-        .post('/tasks')
-        .send(validDto)
-        .expect(201); // Expect HTTP status 201 (Created)
+  it('should fail validation for missing title', async () => {
+    const createTaskDto = { description: 'Test description' };
 
-      expect(response.body).toEqual(mockResponse); // Verify the response matches
-      expect(service.execute).toHaveBeenCalledWith(validDto); // Ensure the mock method was called with correct args
-    });
+    const response = await request(app.getHttpServer())
+      .post('/tasks')
+      .set('Authorization', 'Bearer valid_token') // Provide a valid token
+      .send(createTaskDto)
+      .expect(400);
 
-    it('should throw BadRequestException if validation fails', async () => {
-      const invalidDto: CreateTaskRequestDto = {
-        title: '',
-        description: '',
-        ownerId: '',
-      };
+    expect(response.body.message).toContain('title is required');
+  });
 
-      // Send request with invalid DTO and expect HTTP status 400 (Bad Request)
-      const response = await request(app.getHttpServer())
-        .post('/tasks')
-        .send(invalidDto)
-        .expect(400); // Expecting a Bad Request response due to validation failure
+  it('should fail validation for extra fields', async () => {
+    const createTaskDto = {
+      title: 'Test Task',
+      description: 'Test description',
+      extraField: 'extra',
+    };
 
-      // Ensure validation error messages are correct
-      expect(response.body.message).toContain('title should not be empty');
-      expect(response.body.message).toContain('description should not be empty');
-      expect(response.body.message).toContain('ownerId must be a UUID');
-    });
+    const response = await request(app.getHttpServer())
+      .post('/tasks')
+      .set('Authorization', 'Bearer valid_token') // Provide a valid token
+      .send(createTaskDto)
+      .expect(400);
+
+    expect(response.body.message).toContain('property extraField should not exist');
   });
 
   afterAll(async () => {
