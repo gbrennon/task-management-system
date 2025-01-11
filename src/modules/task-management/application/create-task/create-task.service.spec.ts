@@ -2,7 +2,7 @@ import { deepEqual, instance, mock, verify, when } from "ts-mockito";
 import { CreateTaskService } from "./create-task.service";
 import { NewTaskFactory } from "@task-management/domain/ports/new-task.factory";
 import { TaskRepository } from "@task-management/domain/ports/task.repository";
-import { TaskStatus } from "@task-management/domain/value-objects/task-status";
+import { TaskStatus, TaskStatusEnum } from "@task-management/domain/value-objects/task-status";
 import { Task } from "@task-management/domain/entities/task";
 
 describe('CreateTaskService', () => {
@@ -36,11 +36,12 @@ describe('CreateTaskService', () => {
         description: 'Description 1',
         ownerId: '1',
       };
+      const taskStatus = new TaskStatus(TaskStatusEnum.TODO);
       const fakeTask = new Task(
         'task-id',
         input.title,
         input.description,
-        TaskStatus.TODO,
+        taskStatus,
         input.ownerId
       );
       when(newTaskFactory.create(deepEqual(input))).thenReturn(fakeTask); // Mock create method
@@ -61,11 +62,12 @@ describe('CreateTaskService', () => {
         description: 'Description 1',
         ownerId: '1',
       };
+      const taskStatus = new TaskStatus(TaskStatusEnum.TODO);
       const fakeTask = new Task(
         'task-id',
         input.title,
         input.description,
-        TaskStatus.TODO,
+        taskStatus,
         input.ownerId
       );
       when(newTaskFactory.create(deepEqual(input))).thenReturn(fakeTask);
@@ -86,11 +88,12 @@ describe('CreateTaskService', () => {
         description: 'Description 1',
         ownerId: '1',
       };
+      const taskStatus = new TaskStatus(TaskStatusEnum.TODO);
       const fakeTask = new Task(
         'task-id',
         input.title,
         input.description,
-        TaskStatus.TODO,
+        taskStatus,
         input.ownerId
       );
       when(newTaskFactory.create(deepEqual(input))).thenReturn(fakeTask);
@@ -101,4 +104,3 @@ describe('CreateTaskService', () => {
     });
   });
 });
-
