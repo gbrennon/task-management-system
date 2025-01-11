@@ -11,6 +11,13 @@ export class TaskStatus {
     public readonly value: string
   ) {}
 
+  public equals(other: unknown): boolean {
+    if (!(other instanceof TaskStatus)) {
+      return false;
+    }
+    return this.value === other.value;
+  }
+
   public static fromString(value: string): TaskStatus {
     if (!Object.values(TaskStatusEnum).includes(value as TaskStatusEnum)) {
       throw new InvalidTaskStatusError(value);

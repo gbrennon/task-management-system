@@ -13,7 +13,7 @@ export class Task {
   ) {}
 
   public changeStatus(newStatus: TaskStatus): void {
-    if (this.status === newStatus) {
+    if (this.status.equals(newStatus)) {
       throw new TaskStatusAlreadySetError(newStatus.value);
     }
 

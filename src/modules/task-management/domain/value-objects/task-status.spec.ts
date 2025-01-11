@@ -2,6 +2,35 @@ import { InvalidTaskStatusError } from "../errors/invalid-task-status.error";
 import { TaskStatus, TaskStatusEnum } from "./task-status";
 
 describe('TaskStatus', () => {
+  describe('equals', () => {
+    it('should return true when values are equal', () => {
+      const status = new TaskStatus(TaskStatusEnum.TODO);
+      const otherStatus = new TaskStatus(TaskStatusEnum.TODO);
+
+      const areEqual = status.equals(otherStatus);
+
+      expect(areEqual).toBe(true);
+    });
+
+    it('should return false when values are different', () => {
+      const status = new TaskStatus(TaskStatusEnum.TODO);
+      const otherStatus = new TaskStatus(TaskStatusEnum.IN_PROGRESS);
+
+      const areEqual = status.equals(otherStatus);
+
+      expect(areEqual).toBe(false);
+    });
+
+    it('should return false when types are different', () => {
+      const status = new TaskStatus(TaskStatusEnum.TODO);
+      const otherStatus = { value: TaskStatusEnum.TODO } as TaskStatus;
+
+      const areEqual = status.equals(otherStatus);
+
+      expect(areEqual).toBe(false);
+    });
+  });
+
   describe('fromString', () => {
     it('should return TODO when value is "TODO"', () => {
       const stringStatus = 'TODO';
