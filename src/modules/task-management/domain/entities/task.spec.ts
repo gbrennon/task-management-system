@@ -2,8 +2,6 @@ import { TaskStatusAlreadySetError } from "../errors/task-status-already-set.err
 import { TaskStatus } from "../value-objects/task-status";
 import { Task } from "./task";
 
-
-
 describe('Task', () => {
   describe('changeStatus', () => {
     it('should change the status of the task', () => {
@@ -12,10 +10,10 @@ describe('Task', () => {
       const newStatus = TaskStatus.IN_PROGRESS;
 
       // Act
-      const updatedTask = task.changeStatus(newStatus);
+      task.changeStatus(newStatus);
 
       // Assert
-      expect(updatedTask.status).toBe(newStatus);
+      expect(task.status).toBe(newStatus);
     });
 
     it('should throw an error if the status is the same', () => {
