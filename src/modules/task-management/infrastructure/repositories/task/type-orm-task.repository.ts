@@ -14,6 +14,19 @@ export class TypeORMTaskRepository implements TaskRepository {
     private readonly taskDomainSchemaMapper: TaskDomainSchemaMapper,
     private readonly taskSchemaDomainMapper: TaskSchemaDomainMapper
   ) {}
+  async findByIdAndOwnerId(id: string, ownerId: string): Promise<Task | null> {
+    const taskEntity = await this.entityManager.findOne(
+      TaskEntity,
+      { where: { id: id, ownerId: ownerId } }
+    );
+
+    if(!taskEntity) {
+      return null;
+    }
+
+    return this.taskSchemaDomainMapper.map(taskEntity);
+  }
+
   async findById(id: string): Promise<Task | null> {
     const taskEntity = await this.entityManager.findOne(
       TaskEntity,

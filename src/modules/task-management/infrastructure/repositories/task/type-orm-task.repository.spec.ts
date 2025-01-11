@@ -7,7 +7,7 @@ import {
   TaskSchemaDomainMapper
 } from "../../mappers/task-schema-domain-mapper/task-schema-domain.mapper";
 import { TypeORMTaskRepository } from "./type-orm-task.repository";
-import { TaskStatus } from "@task-management/domain/value-objects/task-status";
+import { TaskStatus, TaskStatusEnum } from "@task-management/domain/value-objects/task-status";
 import { AppDataSource } from "@shared/infrastructure/config/app-data-source";
 import TaskEntity from "@task-management/infrastructure/entities/task.entity";
 
@@ -21,7 +21,7 @@ describe("TypeORMTaskRepository", () => {
   const taskId = "uuid123";
   const taskTitle = "Task title";
   const taskDescription = "Task description";
-  const taskStatus = TaskStatus.TODO;
+  const taskStatus = new TaskStatus(TaskStatusEnum.TODO);
   const taskOwnerId = "1";
 
   const fakeTask = new Task(
@@ -97,6 +97,38 @@ describe("TypeORMTaskRepository", () => {
  
        // Assert
        expect(task).toBeNull();
+    });
+  });
+
+  describe("findByIdAndOwnerId", () => {
+    it("should return a task by id and owner id", async () => {
+       // Arrange
+       await dataSource.manager.save(TaskEntity, {
+         id: fakeTask.id,
+         title: fakeTask.title,
+         description: fakeTask.description,
+         status: fakeTask.status.value,
+         ownerId: fakeTask.ownerId,
+       });
+ 
+       // Act
+       const task = await repository.findByIdAndOwnerId(
+         fakeTask.id,
+         fakeTask.ownerId
+       );
+ 
+       // Assert
+       expect(task).not.toBeNull();
+       expect(task).toEqual(fakeTask);
+    });
+
+    it("should return null if task not found", async () => {
+      const task = await repository.findByIdAndOwnerId(
+        "non-existing-id",
+        "non-existing-owner-id"
+      );
+
+      expect(task).toBeNull();
     });
   });
 });
