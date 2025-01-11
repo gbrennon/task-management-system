@@ -1,5 +1,5 @@
 import { Task } from "@task-management/domain/entities/task";
-import { TaskStatus } from "@task-management/domain/value-objects/task-status";
+import { TaskStatus, TaskStatusEnum } from "@task-management/domain/value-objects/task-status";
 import { NewTaskFactory } from "./uuid-new-task.factory";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -39,7 +39,7 @@ describe('NewTaskFactory', () => {
         mockUuid,
         title,
         description,
-        TaskStatus.TODO,
+        new TaskStatus(TaskStatusEnum.TODO),
         ownerId
       );
       expect(actualTask).toEqual(expectedTask);
