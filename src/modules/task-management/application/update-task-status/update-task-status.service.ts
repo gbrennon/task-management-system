@@ -5,6 +5,7 @@ import { TaskStatus } from "@task-management/domain/value-objects/task-status";
 
 export interface UpdateTaskStatusInput {
   id: string;
+  ownerId: string;
   status: string;
 }
 
@@ -20,7 +21,10 @@ export class UpdateTaskStatusService {
   public async execute(
     input: UpdateTaskStatusInput
   ): Promise<UpdateTaskStatusOutput> {
-    const task = await this.taskRepository.findById(input.id);
+    const task = await this.taskRepository.findByIdAndOwnerId(
+      input.id,
+      input.ownerId
+    );
 
     if (!task) {
       throw new TaskNotFoundError(input.id);
