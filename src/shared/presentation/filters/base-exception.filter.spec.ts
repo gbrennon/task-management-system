@@ -1,104 +1,96 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
 import { BaseExceptionFilter } from './base-exception.filter';
 import { NotFoundError } from '@shared/domain/errors/not-found.error';
 import { ConflictError } from '@shared/domain/errors/conflict.error';
-import { ArgumentsHost } from '@nestjs/common/interfaces';
+import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 
 describe('BaseExceptionFilter', () => {
-  let exceptionFilter: BaseExceptionFilter;
-  let mockResponse: { status: jest.Mock; json: jest.Mock };
-  let mockRequest: { url: string };
+  let filter: BaseExceptionFilter;
+  let mockResponse: any;
+  let mockRequest: any;
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
-    exceptionFilter = new BaseExceptionFilter();
+    filter = new BaseExceptionFilter();
 
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    mockRequest = { url: '/test' };
+
+    mockRequest = {
+      url: '/test-url',
+    };
 
     mockHost = {
       switchToHttp: jest.fn().mockReturnValue({
-        getResponse: () => mockResponse,
-        getRequest: () => mockRequest,
+        getResponse: jest.fn().mockReturnValue(mockResponse),
+        getRequest: jest.fn().mockReturnValue(mockRequest),
       }),
     } as unknown as ArgumentsHost;
   });
 
-  it('should handle a NotFoundError with 404 status', () => {
-    const exception = new NotFoundError('Resource not found');
-
-    exceptionFilter.catch(exception, mockHost);
-
-    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      statusCode: 404,
-      error: 'NotFoundError',
-      message: 'Resource not found',
-      timestamp: expect.any(String),
-      path: '/test',
-    });
-  });
-
-  it('should handle a ConflictError with 409 status', () => {
-    const exception = new ConflictError('Resource conflict');
-
-    exceptionFilter.catch(exception, mockHost);
-
-    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
-    expect(mockResponse.json).toHaveBeenCalledWith({
-      statusCode: 409,
-      error: 'ConflictError',
-      message: 'Resource conflict',
-      timestamp: expect.any(String),
-      path: '/test',
-    });
-  });
-
-  it('should handle HttpException and use its status and message', () => {
+  it('should handle HttpException and send proper response', () => {
     const exception = new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
 
-    exceptionFilter.catch(exception, mockHost);
+    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
     expect(mockResponse.json).toHaveBeenCalledWith({
-      statusCode: 400,
-      error: 'HttpException',
-      message: 'Bad Request',
       timestamp: expect.any(String),
-      path: '/test',
+      path: '/test-url',
+      message: 'Bad Request',
     });
   });
 
-  it('should handle unknown errors with 500 status', () => {
-    const exception = new Error('Unexpected error');
+  it('should handle NotFoundError and send proper response', () => {
+    const exception = new NotFoundError('Resource not found');
 
-    exceptionFilter.catch(exception, mockHost);
+    filter.catch(exception, mockHost);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      timestamp: expect.any(String),
+      path: '/test-url',
+      message: 'Resource not found',
+    });
+  });
+
+  it('should handle ConflictError and send proper response', () => {
+    const exception = new ConflictError('Conflict occurred');
+
+    filter.catch(exception, mockHost);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      timestamp: expect.any(String),
+      path: '/test-url',
+      message: 'Conflict occurred',
+    });
+  });
+
+  it('should handle unknown error and send generic response', () => {
+    const exception = new Error('Unknown error');
+
+    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
     expect(mockResponse.json).toHaveBeenCalledWith({
-      statusCode: 500,
-      error: 'Error',
-      message: 'Unexpected error',
       timestamp: expect.any(String),
-      path: '/test',
+      path: '/test-url',
+      message: 'Unknown error',
     });
   });
 
-  it('should handle errors with no message and default to 500 status', () => {
+  it('should handle error without message and send generic response', () => {
     const exception = new Error();
 
-    exceptionFilter.catch(exception, mockHost);
+    filter.catch(exception, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
     expect(mockResponse.json).toHaveBeenCalledWith({
-      statusCode: 500,
-      error: 'Error',
-      message: 'Internal server error',
       timestamp: expect.any(String),
-      path: '/test',
+      path: '/test-url',
+      message: 'An unexpected error occurred',
     });
   });
 });
