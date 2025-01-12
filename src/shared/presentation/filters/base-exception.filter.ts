@@ -24,7 +24,9 @@ export class BaseExceptionFilter implements ExceptionFilter {
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
-        : this.customErrorMap.get(exception.constructor) || HttpStatus.INTERNAL_SERVER_ERROR;
+        : this.customErrorMap.get(
+          exception.constructor
+        ) || HttpStatus.INTERNAL_SERVER_ERROR;
 
     const message =
       exception instanceof HttpException
