@@ -1,9 +1,10 @@
-export class ConflictError extends Error {
-  public readonly name: string;
+import { BaseError } from './base.error';
 
-  constructor(message: string) {
-    super(message);
-    this.name = 'ConflictError';
-    Object.setPrototypeOf(this, new.target.prototype);
+export class ConflictError extends BaseError {
+  constructor(
+    message: string = 'Conflict occurred', 
+    details?: Record<string, any>
+  ) {
+    super(message, details);
   }
 }
